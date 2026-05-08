@@ -27,7 +27,6 @@ func _physics_process(delta: float) -> void:
 	if _life >= lifetime or _hits >= max_pierce:
 		queue_free()
 		return
-	rotation += delta * 12.0
 	global_position += direction * speed * delta
 
 func _on_body_entered(body: Node) -> void:
