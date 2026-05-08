@@ -2,7 +2,7 @@ extends Node2D
 class_name SpawnManager
 
 @export var enemy_scene: PackedScene
-@export var pool_size: int = 16
+@export var pool_size: int = 20
 @export var spawn_interval: float = 1.4
 @export var spawn_radius: float = 220.0
 @export var max_alive: int = 6
@@ -19,18 +19,35 @@ signal enemy_killed(total_kills: int)
 signal room_cleared
 
 func _ready() -> void:
-	if enemy_scene == null:
-		enemy_scene = load("res://scenes/acorn_bug.tscn")
 	_spawn_timer = Timer.new()
 	_spawn_timer.wait_time = spawn_interval
 	_spawn_timer.one_shot = false
 	_spawn_timer.timeout.connect(_on_spawn_tick)
 	add_child(_spawn_timer)
-	_build_pool()
+	if enemy_scene != null:
+		_build_single_pool(enemy_scene, pool_size)
 
-func _build_pool() -> void:
-	for i in pool_size:
-		var e: Node = enemy_scene.instantiate()
+# 다중 적 타입으로 풀 재구성
+func configure_enemies(scenes: Array, quota: int) -> void:
+	stop()
+	_clear_pool()
+	room_quota = quota
+	if scenes.is_empty():
+		return
+	var per_type: int = pool_size / scenes.size()
+	for scene in scenes:
+		_build_single_pool(scene, per_type)
+	_pool.shuffle()
+
+func _clear_pool() -> void:
+	for e in _pool:
+		if is_instance_valid(e):
+			e.queue_free()
+	_pool.clear()
+
+func _build_single_pool(scene: PackedScene, count: int) -> void:
+	for i in count:
+		var e: Node = scene.instantiate()
 		add_child(e)
 		if e.has_method("deactivate"):
 			e.deactivate()
@@ -50,7 +67,7 @@ func stop() -> void:
 	_running = false
 	_spawn_timer.stop()
 	for e in _pool:
-		if e.has_method("deactivate"):
+		if is_instance_valid(e) and e.has_method("deactivate"):
 			e.deactivate()
 
 func _spawn_initial_burst(count: int) -> void:
@@ -74,19 +91,20 @@ func _spawn_at_angle(angle: float) -> void:
 	if enemy == null:
 		return
 	var pos: Vector2 = _player.global_position + Vector2.RIGHT.rotated(angle) * spawn_radius
-	enemy.activate(pos)
+	if enemy.has_method("activate"):
+		enemy.activate(pos)
 	_spawned_in_room += 1
 
 func _get_inactive() -> Node:
 	for e in _pool:
-		if not e.visible:
+		if is_instance_valid(e) and not e.visible:
 			return e
 	return null
 
 func _alive_count() -> int:
 	var n := 0
 	for e in _pool:
-		if e.visible:
+		if is_instance_valid(e) and e.visible:
 			n += 1
 	return n
 

@@ -11,7 +11,6 @@
 
 [node name="Main" type="Node2D" unique_id=1210506167]
 script = ExtResource("1")
-enemy_scene = ExtResource("4")
 
 [node name="Background" type="Polygon2D" parent="." unique_id=835886748]
 position = Vector2(666, 486)

@@ -1,9 +1,23 @@
 extends Node2D
 
-@export var enemy_scene: PackedScene
-@export var portal_offset: Vector2 = Vector2(0, -120)
-
 const PORTAL_SCENE: PackedScene = preload("res://scenes/portal.tscn")
+const ACORN_KING_SCENE: PackedScene = preload("res://scenes/acorn_king.tscn")
+const ACORN_BUG_SCENE: PackedScene = preload("res://scenes/acorn_bug.tscn")
+const GRASS_GOBLIN_SCENE: PackedScene = preload("res://scenes/grass_goblin.tscn")
+const ANGRY_SQUIRREL_SCENE: PackedScene = preload("res://scenes/angry_squirrel.tscn")
+
+enum RoomType { COMBAT, REST, BOSS }
+
+const TOTAL_FLOORS: int = 5
+
+# 층별 방 타입 시퀀스 (1층~5층)
+const FLOOR_SEQUENCE: Array[int] = [
+	RoomType.COMBAT,  # 1층: 도토리벌레
+	RoomType.COMBAT,  # 2층: 도토리벌레 + 도깨비풀
+	RoomType.REST,    # 3층: 휴식
+	RoomType.COMBAT,  # 4층: 전부 혼합
+	RoomType.BOSS,    # 5층: 다람쥐 왕
+]
 
 @onready var player: Player = $Player
 @onready var background: Polygon2D = $Background
@@ -14,16 +28,15 @@ const PORTAL_SCENE: PackedScene = preload("res://scenes/portal.tscn")
 @onready var spawner: SpawnManager = $SpawnManager
 
 var _run_time: float = 0.0
-var _rooms_cleared: int = 0
-var _current_room: int = 1
+var _floors_cleared: int = 0
+var _current_floor: int = 1
 var _portal: Portal = null
 var _running: bool = false
 var _rune_manager: RuneManager = null
+var _boss: Node = null
+var _total_kills: int = 0
 
 func _ready() -> void:
-	if enemy_scene != null:
-		spawner.enemy_scene = enemy_scene
-
 	_rune_manager = RuneManager.new()
 	add_child(_rune_manager)
 	_rune_manager.load_from_json("res://data/runes.json")
@@ -39,37 +52,93 @@ func _ready() -> void:
 
 	spawner.enemy_killed.connect(_on_enemy_killed)
 	spawner.room_cleared.connect(_on_room_cleared)
-
 	result_screen.retry_requested.connect(_on_retry)
 
 	hud.set_hp(player.current_hp, player.max_hp)
 	hud.set_kills(0)
-	hud.set_room(_current_room, _current_room)
+	hud.set_floor(_current_floor, TOTAL_FLOORS)
 
-	_start_room()
+	_start_floor()
 
 func _process(delta: float) -> void:
 	if _running:
 		_run_time += delta
 	background.position = player.global_position
 
-func _start_room() -> void:
-	_running = true
-	if _portal != null and is_instance_valid(_portal):
-		_portal.queue_free()
-		_portal = null
-	spawner.start_room(player)
-	hud.set_room(_current_room, _current_room)
+# ─── 층 진행 ───────────────────────────────────────────────────
 
-func _on_enemy_killed(total: int) -> void:
-	hud.set_kills(total)
+func _start_floor() -> void:
+	_running = true
+	_clear_portal()
+	hud.set_floor(_current_floor, TOTAL_FLOORS)
+
+	match FLOOR_SEQUENCE[_current_floor - 1]:
+		RoomType.COMBAT: _start_combat_floor()
+		RoomType.REST:   _start_rest_floor()
+		RoomType.BOSS:   _start_boss_floor()
+
+func _start_combat_floor() -> void:
+	var scenes: Array = _get_enemy_scenes()
+	var quota: int = _get_quota()
+	spawner.configure_enemies(scenes, quota)
+	spawner.start_room(player)
+
+func _get_enemy_scenes() -> Array:
+	match _current_floor:
+		1: return [ACORN_BUG_SCENE]
+		2: return [ACORN_BUG_SCENE, GRASS_GOBLIN_SCENE]
+		4: return [ACORN_BUG_SCENE, GRASS_GOBLIN_SCENE, ANGRY_SQUIRREL_SCENE]
+		_: return [ACORN_BUG_SCENE]
+
+func _get_quota() -> int:
+	match _current_floor:
+		1: return 10
+		2: return 12
+		4: return 15
+		_: return 12
+
+func _start_rest_floor() -> void:
+	spawner.stop()
+	var heal: int = int(player.max_hp * 0.3)
+	player.heal(heal)
+	_show_rest_message_async()
+
+func _show_rest_message_async() -> void:
+	var label := Label.new()
+	label.text = "✦ 휴식의 방 ✦\n체력 %d 회복!" % int(player.max_hp * 0.3)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.modulate = Color(0.65, 1.0, 0.65)
+	label.size = Vector2(240.0, 60.0)
+	label.position = Vector2(60.0, player.global_position.y - 80.0)
+	add_child(label)
+
+	await get_tree().create_timer(1.6).timeout
+
+	if not is_instance_valid(label):
+		return
+	label.queue_free()
+	if not _running:
+		return
+	_show_rune_pick()
+
+func _start_boss_floor() -> void:
+	spawner.stop()
+	hud.show_boss_bar(true)
+	_boss = ACORN_KING_SCENE.instantiate()
+	_boss.global_position = player.global_position + Vector2(0.0, -150.0)
+	add_child(_boss)
+	_boss.died.connect(_on_boss_died)
+	_boss.hp_changed.connect(_on_boss_hp_changed)
+
+# ─── 룬 & 포탈 ─────────────────────────────────────────────────
 
 func _on_room_cleared() -> void:
-	_rooms_cleared += 1
+	_floors_cleared += 1
 	_show_rune_pick()
 
 func _show_rune_pick() -> void:
-	var picks := _rune_manager.draw_three(_current_room)
+	var picks := _rune_manager.draw_three(_current_floor)
 	if picks.is_empty():
 		_spawn_portal()
 		return
@@ -85,25 +154,63 @@ func _on_rune_chosen(rune_id: String) -> void:
 
 func _spawn_portal() -> void:
 	_portal = PORTAL_SCENE.instantiate()
-	_portal.global_position = player.global_position + portal_offset
+	_portal.global_position = player.global_position + Vector2(0.0, -120.0)
 	_portal.entered.connect(_on_portal_entered)
 	add_child(_portal)
 
 func _on_portal_entered() -> void:
-	_current_room += 1
-	_start_room()
+	_current_floor += 1
+	if _current_floor > TOTAL_FLOORS:
+		_end_run(true)
+	else:
+		_start_floor()
+
+# ─── 보스 ───────────────────────────────────────────────────────
+
+func _on_boss_hp_changed(current: int, max_hp: int) -> void:
+	hud.set_boss_hp(current, max_hp)
+
+func _on_boss_died(_boss_node: Node) -> void:
+	_total_kills += 1
+	_floors_cleared += 1
+	hud.show_boss_bar(false)
+	_deactivate_all_enemies()
+	await get_tree().create_timer(1.0).timeout
+	if _running:
+		_end_run(true)
+
+func _deactivate_all_enemies() -> void:
+	for e in get_tree().get_nodes_in_group("enemies"):
+		if is_instance_valid(e) and e.visible and e.has_method("deactivate"):
+			e.deactivate()
+
+# ─── 플레이어 이벤트 ─────────────────────────────────────────────
+
+func _on_enemy_killed(total: int) -> void:
+	_total_kills = total
+	hud.set_kills(_total_kills)
 
 func _on_player_hp_changed(current: int, max_hp: int) -> void:
 	hud.set_hp(current, max_hp)
 
 func _on_player_died() -> void:
-	_running = false
-	spawner.stop()
-	result_screen.show_result(false, spawner.get_kills(), _run_time, _rooms_cleared)
+	_end_run(false)
 
 func _on_skill_cd_changed(remaining: float, total: float) -> void:
 	if skill_button.has_method("set_cooldown"):
 		skill_button.set_cooldown(remaining, total)
+
+# ─── 유틸 ───────────────────────────────────────────────────────
+
+func _end_run(victory: bool) -> void:
+	_running = false
+	spawner.stop()
+	result_screen.show_result(victory, _total_kills, _run_time, _floors_cleared)
+
+func _clear_portal() -> void:
+	if _portal != null and is_instance_valid(_portal):
+		_portal.queue_free()
+		_portal = null
 
 func _on_retry() -> void:
 	_rune_manager.reset()

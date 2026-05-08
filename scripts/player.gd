@@ -178,5 +178,11 @@ func take_damage(amount: int, dmg_type: int = Combat.DamageType.PHYSICAL) -> voi
 		_action_lock = true
 		anim.play(&"hit")
 
+func heal(amount: int) -> void:
+	if not _alive:
+		return
+	current_hp = min(current_hp + amount, max_hp)
+	hp_changed.emit(current_hp, max_hp)
+
 func is_alive() -> bool:
 	return _alive

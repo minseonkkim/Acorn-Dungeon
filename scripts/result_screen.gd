@@ -13,12 +13,16 @@ func _ready() -> void:
 	visible = false
 	_retry.pressed.connect(_on_retry_pressed)
 
-func show_result(victory: bool, kills: int, run_time: float, rooms_cleared: int) -> void:
-	_title.text = "방 클리어!" if victory else "사망"
-	_title.modulate = Color(0.6, 1.0, 0.6) if victory else Color(1.0, 0.5, 0.5)
+func show_result(victory: bool, kills: int, run_time: float, floors_cleared: int) -> void:
+	if victory:
+		_title.text = "던전 클리어!"
+		_title.modulate = Color(1.0, 0.85, 0.2)
+	else:
+		_title.text = "사망"
+		_title.modulate = Color(1.0, 0.45, 0.45)
 	_kills_label.text = str(kills)
 	_time_label.text = _format_time(run_time)
-	_rooms_label.text = str(rooms_cleared)
+	_rooms_label.text = str(floors_cleared)
 	visible = true
 
 func _format_time(t: float) -> String:
