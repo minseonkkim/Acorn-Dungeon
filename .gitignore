@@ -1,0 +1,29 @@
+# Godot 4 specific
+.godot/
+.import/
+export.cfg
+export_presets.cfg
+
+# Godot Mono / C# (unused, but safe to ignore)
+.mono/
+data_*/
+mono_crash.*.json
+
+# Build / export artifacts
+build/
+exports/
+*.apk
+*.aab
+*.ipa
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vs/
+.vscode/
+
+# Logs
+*.log

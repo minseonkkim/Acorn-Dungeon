@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/virtual_joystick.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/acorn_bug.tscn" id="4"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1")
+enemy_scene = ExtResource("4")
+
+[node name="Background" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-2000, -2000, 2000, -2000, 2000, 2000, -2000, 2000)
+color = Color(0.18, 0.28, 0.18, 1)
+
+[node name="Grid" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-2000, -1, 2000, -1, 2000, 1, -2000, 1)
+color = Color(0.25, 0.35, 0.25, 1)
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(180, 320)
+
+[node name="SpawnTimer" type="Timer" parent="."]
+wait_time = 4.0
+one_shot = false
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="VirtualJoystick" parent="UI" instance=ExtResource("3")]
