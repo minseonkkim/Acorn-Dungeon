@@ -12,9 +12,11 @@ class_name Player
 var current_hp: int
 var joystick: Node = null
 var skill_button: Node = null
+var rune_manager: RuneManager = null
 var _skill_cd: float = 0.0
 var _alive: bool = true
 var _action_lock: bool = false
+var _rune_particles: CPUParticles2D = null
 
 @onready var attack_timer: Timer = $AttackTimer
 @onready var anim: AnimatedSprite2D = $Sprite
@@ -34,6 +36,30 @@ func _ready() -> void:
 	attack_timer.start()
 	anim.animation_finished.connect(_on_anim_finished)
 	hp_changed.emit(current_hp, max_hp)
+	_setup_rune_particles()
+
+func _setup_rune_particles() -> void:
+	_rune_particles = CPUParticles2D.new()
+	_rune_particles.emitting = false
+	_rune_particles.one_shot = true
+	_rune_particles.explosiveness = 0.85
+	_rune_particles.amount = 20
+	_rune_particles.lifetime = 0.9
+	_rune_particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
+	_rune_particles.emission_sphere_radius = 6.0
+	_rune_particles.direction = Vector2(0.0, -1.0)
+	_rune_particles.spread = 150.0
+	_rune_particles.gravity = Vector2(0.0, 60.0)
+	_rune_particles.initial_velocity_min = 30.0
+	_rune_particles.initial_velocity_max = 70.0
+	_rune_particles.scale_amount_min = 2.0
+	_rune_particles.scale_amount_max = 4.0
+	_rune_particles.color = Color(0.7, 1.0, 0.35)
+	add_child(_rune_particles)
+
+func play_rune_pickup_effect() -> void:
+	if _rune_particles != null:
+		_rune_particles.restart()
 
 func _on_anim_finished() -> void:
 	if anim.animation in [&"attack", &"hit", &"skill"]:
@@ -133,6 +159,16 @@ func take_damage(amount: int, dmg_type: int = Combat.DamageType.PHYSICAL) -> voi
 	var actual: int = Combat.calculate_damage(amount, dmg_type, defense)
 	current_hp = max(current_hp - actual, 0)
 	hp_changed.emit(current_hp, max_hp)
+
+	# Thorn reflect: deal a portion of received damage to nearest enemy
+	if rune_manager != null:
+		var thorn := rune_manager.get_thorn_factor()
+		if thorn > 0.0:
+			var reflect_dmg := maxi(1, int(float(actual) * thorn))
+			var nearest := _find_nearest_enemy()
+			if nearest != null and nearest.has_method("take_damage"):
+				nearest.take_damage(reflect_dmg, Combat.DamageType.TRUE)
+
 	if current_hp == 0:
 		_alive = false
 		anim.play(&"death")

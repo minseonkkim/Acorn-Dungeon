@@ -17,12 +17,18 @@ var _rooms_cleared: int = 0
 var _current_room: int = 1
 var _portal: Portal = null
 var _running: bool = false
+var _rune_manager: RuneManager = null
 
 func _ready() -> void:
 	if enemy_scene != null:
 		spawner.enemy_scene = enemy_scene
 
+	_rune_manager = RuneManager.new()
+	add_child(_rune_manager)
+	_rune_manager.load_from_json("res://data/runes.json")
+
 	player.joystick = joystick
+	player.rune_manager = _rune_manager
 	player.hp_changed.connect(_on_player_hp_changed)
 	player.died.connect(_on_player_died)
 	player.skill_cooldown_changed.connect(_on_skill_cd_changed)
@@ -58,6 +64,18 @@ func _on_enemy_killed(total: int) -> void:
 
 func _on_room_cleared() -> void:
 	_rooms_cleared += 1
+	_show_rune_pick()
+
+func _show_rune_pick() -> void:
+	var picks := _rune_manager.draw_three(_current_room)
+	var ui := RunePickUI.new()
+	ui.setup(_rune_manager, picks)
+	add_child(ui)
+	ui.rune_chosen.connect(_on_rune_chosen)
+
+func _on_rune_chosen(rune_id: String) -> void:
+	_rune_manager.apply_rune(rune_id, player)
+	player.play_rune_pickup_effect()
 	_spawn_portal()
 
 func _spawn_portal() -> void:
@@ -83,4 +101,5 @@ func _on_skill_cd_changed(remaining: float, total: float) -> void:
 		skill_button.set_cooldown(remaining, total)
 
 func _on_retry() -> void:
+	_rune_manager.reset()
 	get_tree().reload_current_scene()

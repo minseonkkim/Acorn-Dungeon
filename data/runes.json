@@ -1,0 +1,52 @@
+[
+  {
+    "id": "atk_boost",
+    "name": "날카로운 도토리",
+    "rarity": "common",
+    "category": "offense",
+    "description": "공격력이 20% 증가한다.",
+    "effect_type": "atk_percent",
+    "effect_value": 0.2,
+    "stack_limit": 5
+  },
+  {
+    "id": "hp_boost",
+    "name": "단단한 나무껍질",
+    "rarity": "common",
+    "category": "defense",
+    "description": "최대 체력이 15 증가하고 즉시 회복된다.",
+    "effect_type": "max_hp_flat",
+    "effect_value": 15,
+    "stack_limit": 5
+  },
+  {
+    "id": "speed_boost",
+    "name": "바람의 발",
+    "rarity": "common",
+    "category": "utility",
+    "description": "이동 속도가 15 증가한다.",
+    "effect_type": "move_speed_flat",
+    "effect_value": 15,
+    "stack_limit": 5
+  },
+  {
+    "id": "thorn_armor",
+    "name": "가시 도토리 갑옷",
+    "rarity": "common",
+    "category": "defense",
+    "description": "피격 시 받은 데미지의 30%를 가장 가까운 적에게 반사한다.",
+    "effect_type": "thorn_reflect",
+    "effect_value": 0.3,
+    "stack_limit": 3
+  },
+  {
+    "id": "swift_attack",
+    "name": "쾌속 발톱",
+    "rarity": "common",
+    "category": "offense",
+    "description": "공격 속도가 15% 증가한다.",
+    "effect_type": "attack_speed_percent",
+    "effect_value": 0.15,
+    "stack_limit": 5
+  }
+]

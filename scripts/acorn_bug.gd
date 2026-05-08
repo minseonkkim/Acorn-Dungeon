@@ -77,5 +77,5 @@ func take_damage(amount: int, dmg_type: int = Combat.DamageType.PHYSICAL) -> voi
 	var actual: int = Combat.calculate_damage(amount, dmg_type, defense)
 	current_hp -= actual
 	if current_hp <= 0:
-		died.emit(self)
 		deactivate()
+		died.emit(self)
