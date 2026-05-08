@@ -11,6 +11,7 @@ class_name Player
 
 var current_hp: int
 var base_attack_damage: int = 0
+var thorn_factor: float = 0.0
 var joystick: Node = null
 var skill_button: Node = null
 var rune_manager: RuneManager = null
@@ -162,14 +163,11 @@ func take_damage(amount: int, dmg_type: int = Combat.DamageType.PHYSICAL) -> voi
 	current_hp = max(current_hp - actual, 0)
 	hp_changed.emit(current_hp, max_hp)
 
-	# Thorn reflect: deal a portion of received damage to nearest enemy
-	if rune_manager != null:
-		var thorn := rune_manager.get_thorn_factor()
-		if thorn > 0.0:
-			var reflect_dmg := maxi(1, int(float(actual) * thorn))
-			var nearest := _find_nearest_enemy()
-			if nearest != null and nearest.has_method("take_damage"):
-				nearest.take_damage(reflect_dmg, Combat.DamageType.TRUE)
+	if thorn_factor > 0.0:
+		var reflect_dmg := maxi(1, int(float(actual) * thorn_factor))
+		var nearest := _find_nearest_enemy()
+		if nearest != null and nearest.has_method("take_damage"):
+			nearest.take_damage(reflect_dmg, Combat.DamageType.TRUE)
 
 	if current_hp == 0:
 		_alive = false

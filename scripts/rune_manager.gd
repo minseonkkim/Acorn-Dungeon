@@ -65,16 +65,8 @@ func _apply_effect(def: Dictionary, player: Player) -> void:
 			player.attack_speed *= (1.0 + value)
 			player.attack_timer.wait_time = 1.0 / player.attack_speed
 		"thorn_reflect":
-			pass  # read via get_thorn_factor() during take_damage
-
-# Returns total thorn reflect fraction (e.g. 0.9 for 3 stacks of 0.3)
-func get_thorn_factor() -> float:
-	var total := 0.0
-	for id: String in _active:
-		var def: Dictionary = _definitions.get(id, {})
-		if def.get("effect_type", "") == "thorn_reflect":
-			total += float(def.get("effect_value", 0.0)) * float(_active[id])
-	return total
+			var stack: int = _active.get(def.get("id", ""), 0)
+			player.thorn_factor = value * float(stack)
 
 func get_active() -> Dictionary:
 	return _active
