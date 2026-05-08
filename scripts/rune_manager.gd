@@ -51,7 +51,9 @@ func _apply_effect(def: Dictionary, player: Player) -> void:
 	var value: float = float(def.get("effect_value", 0.0))
 	match effect_type:
 		"atk_percent":
-			player.attack_damage = maxi(1, int(round(float(player.attack_damage) * (1.0 + value))))
+			# 합산: base × (1 + value × stack) — 복리 아님
+			var stack: int = _active.get(def.get("id", ""), 0)
+			player.attack_damage = maxi(1, int(round(float(player.base_attack_damage) * (1.0 + value * float(stack)))))
 		"max_hp_flat":
 			var added := int(value)
 			player.max_hp += added

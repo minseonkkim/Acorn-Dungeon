@@ -10,6 +10,7 @@ class_name Player
 @export var skill_cooldown: float = 8.0
 
 var current_hp: int
+var base_attack_damage: int = 0
 var joystick: Node = null
 var skill_button: Node = null
 var rune_manager: RuneManager = null
@@ -30,6 +31,7 @@ signal died
 
 func _ready() -> void:
 	current_hp = max_hp
+	base_attack_damage = attack_damage
 	add_to_group("player")
 	attack_timer.wait_time = 1.0 / attack_speed
 	attack_timer.timeout.connect(_on_attack_timer_timeout)
