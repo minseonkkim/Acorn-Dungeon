@@ -14,6 +14,7 @@ var joystick: Node = null
 var skill_button: Node = null
 var _skill_cd: float = 0.0
 var _alive: bool = true
+var _action_lock: bool = false
 
 @onready var attack_timer: Timer = $AttackTimer
 @onready var anim: AnimatedSprite2D = $Sprite
@@ -31,7 +32,12 @@ func _ready() -> void:
 	attack_timer.wait_time = 1.0 / attack_speed
 	attack_timer.timeout.connect(_on_attack_timer_timeout)
 	attack_timer.start()
+	anim.animation_finished.connect(_on_anim_finished)
 	hp_changed.emit(current_hp, max_hp)
+
+func _on_anim_finished() -> void:
+	if anim.animation in [&"attack", &"hit", &"skill"]:
+		_action_lock = false
 
 func _physics_process(delta: float) -> void:
 	if not _alive:
@@ -49,6 +55,10 @@ func _physics_process(delta: float) -> void:
 			dir = dir.normalized()
 	velocity = dir * move_speed
 	move_and_slide()
+	if _action_lock:
+		if velocity.x != 0.0:
+			anim.flip_h = velocity.x < 0.0
+		return
 	if velocity.length() > 1.0:
 		anim.play(&"walk")
 		if velocity.x != 0.0:
@@ -65,6 +75,10 @@ func _on_attack_timer_timeout() -> void:
 	if global_position.distance_to(target.global_position) > attack_range:
 		return
 	_spawn_projectile(target)
+	if anim.animation == &"hit" or anim.animation == &"skill":
+		return
+	_action_lock = true
+	anim.play(&"attack")
 
 func _find_nearest_enemy() -> Node2D:
 	var enemies := get_tree().get_nodes_in_group("enemies")
@@ -110,6 +124,8 @@ func use_skill() -> void:
 	get_tree().current_scene.add_child(acorn)
 	_skill_cd = skill_cooldown
 	skill_cooldown_changed.emit(_skill_cd, skill_cooldown)
+	_action_lock = true
+	anim.play(&"skill")
 
 func take_damage(amount: int, dmg_type: int = Combat.DamageType.PHYSICAL) -> void:
 	if not _alive:
@@ -119,7 +135,12 @@ func take_damage(amount: int, dmg_type: int = Combat.DamageType.PHYSICAL) -> voi
 	hp_changed.emit(current_hp, max_hp)
 	if current_hp == 0:
 		_alive = false
+		anim.play(&"death")
+		await anim.animation_finished
 		died.emit()
+	else:
+		_action_lock = true
+		anim.play(&"hit")
 
 func is_alive() -> bool:
 	return _alive
