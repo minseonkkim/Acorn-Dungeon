@@ -16,6 +16,7 @@ var _skill_cd: float = 0.0
 var _alive: bool = true
 
 @onready var attack_timer: Timer = $AttackTimer
+@onready var anim: AnimatedSprite2D = $Sprite
 
 const PROJECTILE_SCENE: PackedScene = preload("res://scenes/projectile.tscn")
 const ROLLING_ACORN_SCENE: PackedScene = preload("res://scenes/rolling_acorn.tscn")
@@ -48,6 +49,12 @@ func _physics_process(delta: float) -> void:
 			dir = dir.normalized()
 	velocity = dir * move_speed
 	move_and_slide()
+	if velocity.length() > 1.0:
+		anim.play(&"walk")
+		if velocity.x != 0.0:
+			anim.flip_h = velocity.x < 0.0
+	else:
+		anim.play(&"idle")
 
 func _on_attack_timer_timeout() -> void:
 	if not _alive:
