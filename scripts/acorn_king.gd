@@ -30,9 +30,9 @@ const ACORN_BUG_SCENE: PackedScene = preload("res://scenes/acorn_bug.tscn")
 const SPIKE_ZONE_SCENE: PackedScene = preload("res://scenes/spike_zone.tscn")
 
 const PHASE_FRAMES: Array = [
-	preload("res://resources/sprite_frames/acron_king_phase1.tres"),
-	preload("res://resources/sprite_frames/acron_king_phase2.tres"),
-	preload("res://resources/sprite_frames/acron_king_phase3.tres"),
+	preload("res://resources/sprite_frames/acorn_king_phase1.tres"),
+	preload("res://resources/sprite_frames/acorn_king_phase2.tres"),
+	preload("res://resources/sprite_frames/acorn_king_phase3.tres"),
 ]
 
 func _ready() -> void:

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dplioosghk1ty"
-path="res://.godot/imported/acron_king_phase2.png-ddf6c2445433cf980802b0bada825b7b.ctex"
+path="res://.godot/imported/acorn_king_phase2.png-ddf6c2445433cf980802b0bada825b7b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/acron_king_phase2.png"
-dest_files=["res://.godot/imported/acron_king_phase2.png-ddf6c2445433cf980802b0bada825b7b.ctex"]
+source_file="res://assets/sprites/enemies/acorn_king_phase2.png"
+dest_files=["res://.godot/imported/acorn_king_phase2.png-ddf6c2445433cf980802b0bada825b7b.ctex"]
 
 [params]
 
