@@ -17,9 +17,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -130.0
-offset_top = -150.0
+offset_top = -175.0
 offset_right = 130.0
-offset_bottom = 150.0
+offset_bottom = 175.0
 
 [node name="Title" type="Label" parent="Panel"]
 anchor_right = 1.0
@@ -74,12 +74,37 @@ text = "방 클리어"
 text = "0"
 horizontal_alignment = 2
 
+[node name="AcornRow" type="HBoxContainer" parent="Panel"]
+anchor_right = 1.0
+offset_left = 30.0
+offset_top = 185.0
+offset_right = -30.0
+offset_bottom = 215.0
+
+[node name="Label" type="Label" parent="Panel/AcornRow"]
+size_flags_horizontal = 3
+text = "획득 도토리"
+
+[node name="Value" type="Label" parent="Panel/AcornRow"]
+text = "0"
+horizontal_alignment = 2
+
 [node name="RetryButton" type="Button" parent="Panel"]
-anchor_left = 0.5
-anchor_right = 0.5
+anchor_left = 0.0
 anchor_bottom = 1.0
-offset_left = -70.0
-offset_top = -55.0
-offset_right = 70.0
-offset_bottom = -20.0
-text = "다시 시작"
+anchor_right = 0.5
+offset_left = 15.0
+offset_top = -62.0
+offset_right = -8.0
+offset_bottom = -18.0
+text = "재도전"
+
+[node name="TownButton" type="Button" parent="Panel"]
+anchor_left = 0.5
+anchor_bottom = 1.0
+anchor_right = 1.0
+offset_left = 8.0
+offset_top = -62.0
+offset_right = -15.0
+offset_bottom = -18.0
+text = "마을로"

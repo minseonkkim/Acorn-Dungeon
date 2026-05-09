@@ -16,9 +16,13 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="Acorn Dungeon"
 config/description="Solo pixel-art roguelike dungeon RPG"
-run/main_scene="res://scenes/main.tscn"
+run/main_scene="res://scenes/town.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[autoload]
+
+SaveManager="*res://scripts/save_manager.gd"
 
 [display]
 

@@ -35,6 +35,7 @@ var _running: bool = false
 var _rune_manager: RuneManager = null
 var _boss: Node = null
 var _total_kills: int = 0
+var _acorns_earned: int = 0  # 이번 런에서 획득한 도토리
 
 func _ready() -> void:
 	_rune_manager = RuneManager.new()
@@ -53,12 +54,21 @@ func _ready() -> void:
 	spawner.enemy_killed.connect(_on_enemy_killed)
 	spawner.room_cleared.connect(_on_room_cleared)
 	result_screen.retry_requested.connect(_on_retry)
+	result_screen.town_requested.connect(_on_go_to_town)
+
+	# 도토리 나무 영구 업그레이드 적용
+	SaveManager.apply_to_player(player)
 
 	hud.set_hp(player.current_hp, player.max_hp)
 	hud.set_kills(0)
 	hud.set_floor(_current_floor, TOTAL_FLOORS)
 
 	_start_floor()
+
+	# 치유의 씨앗 업그레이드: 시작 시 체력 10% 회복
+	var heal_pct := SaveManager.get_start_heal_pct()
+	if heal_pct > 0.0:
+		player.heal(int(player.max_hp * heal_pct))
 
 func _process(delta: float) -> void:
 	if _running:
@@ -172,6 +182,7 @@ func _on_boss_hp_changed(current: int, max_hp: int) -> void:
 
 func _on_boss_died(_boss_node: Node) -> void:
 	_total_kills += 1
+	_acorns_earned += 10  # 보스 처치 보너스
 	_floors_cleared += 1
 	hud.show_boss_bar(false)
 	_deactivate_all_enemies()
@@ -188,6 +199,7 @@ func _deactivate_all_enemies() -> void:
 
 func _on_enemy_killed(total: int) -> void:
 	_total_kills = total
+	_acorns_earned += 1  # 적 처치당 도토리 1개
 	hud.set_kills(_total_kills)
 
 func _on_player_hp_changed(current: int, max_hp: int) -> void:
@@ -205,7 +217,10 @@ func _on_skill_cd_changed(remaining: float, total: float) -> void:
 func _end_run(victory: bool) -> void:
 	_running = false
 	spawner.stop()
-	result_screen.show_result(victory, _total_kills, _run_time, _floors_cleared)
+	# 런 결과를 SaveManager에 기록
+	SaveManager.add_acorns(_acorns_earned)
+	SaveManager.finish_run(_floors_cleared)
+	result_screen.show_result(victory, _total_kills, _run_time, _floors_cleared, _acorns_earned)
 
 func _clear_portal() -> void:
 	if _portal != null and is_instance_valid(_portal):
@@ -215,3 +230,6 @@ func _clear_portal() -> void:
 func _on_retry() -> void:
 	_rune_manager.reset()
 	get_tree().reload_current_scene()
+
+func _on_go_to_town() -> void:
+	get_tree().change_scene_to_file("res://scenes/town.tscn")
