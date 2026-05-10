@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/projectiles/goblin_shot.png" id="2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
-size = Vector2(8, 8)
+size = Vector2(14, 14)
 
 [node name="EnemyProjectile" type="Area2D"]
 collision_layer = 8

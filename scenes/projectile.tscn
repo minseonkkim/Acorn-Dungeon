@@ -58,7 +58,7 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
-size = Vector2(6, 6)
+size = Vector2(18, 18)
 
 [node name="Projectile" type="Area2D"]
 collision_layer = 4

@@ -4,7 +4,7 @@
 [ext_resource type="SpriteFrames" path="res://resources/sprite_frames/doori.tres" id="2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
-size = Vector2(14, 14)
+size = Vector2(44, 64)
 
 [node name="Player" type="CharacterBody2D" unique_id=11678316]
 collision_mask = 2

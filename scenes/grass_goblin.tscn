@@ -4,7 +4,7 @@
 [ext_resource type="SpriteFrames" path="res://resources/sprite_frames/grass_goblin.tres" id="2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
-size = Vector2(20, 20)
+size = Vector2(28, 38)
 
 [node name="GrassGoblin" type="CharacterBody2D"]
 collision_layer = 2
